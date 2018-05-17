@@ -1,0 +1,33 @@
+image: maven:3.5.3-jdk-8-alpine
+
+cache:
+  key: m2
+  paths:
+  - /cache/.m2/
+
+services:
+- postgres:9.4.18-alpine
+
+variables:
+  POSTGRES_DB: test
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+  MAVEN_OPTS: -Dmaven.repo.local=/cache/.m2
+
+stages:
+- test
+- package
+
+test:
+  stage: test
+  script:
+  - mvn clean verify -Pci -Dsonar.host.url=http://sonarqube.ci.10.1.1.1.xip.io
+
+package:
+  stage: package
+  script:
+  - mvn install -DskipTests -Dsonar.skip
+  artifacts:
+    paths:
+    - '**/target/*.jar'
+    expire_in: 1 week

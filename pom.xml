@@ -1,0 +1,105 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.0.2.RELEASE</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.example</groupId>
+  <artifactId>contacts</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Contacts - Root</name>
+  <packaging>pom</packaging>
+  <modules>
+    <module>contacts-core</module>
+    <module>contacts-service</module>
+  </modules>
+
+  <properties>
+    <java.version>1.8</java.version>
+  </properties>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/application*.yml</include>
+          <include>**/application*.yaml</include>
+          <include>**/application*.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <excludes>
+          <exclude>**/application*.yml</exclude>
+          <exclude>**/application*.yaml</exclude>
+          <exclude>**/application*.properties</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/main/docker</directory>
+        <filtering>true</filtering>
+        <targetPath>${project.build.directory}</targetPath>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <phase>verify</phase>
+              <goals>
+                <goal>sonar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.spotify</groupId>
+          <artifactId>dockerfile-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>build</goal>
+                <goal>push</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>tag-project-version</id>
+              <goals>
+                <goal>tag</goal>
+              </goals>
+              <configuration>
+                <tag>${project.version}</tag>
+              </configuration>
+            </execution>
+          </executions>
+          <configuration>
+            <contextDirectory>${project.build.directory}</contextDirectory>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+  </build>
+  
+  <profiles>
+    <profile>
+      <id>local</id>
+      <properties>
+        <sonar.skip>true</sonar.skip>
+      </properties>
+    </profile>
+  </profiles>
+</project>

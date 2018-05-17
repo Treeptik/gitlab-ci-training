@@ -1,0 +1,58 @@
+version: '3.3'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:10.5.2-ce.0
+    restart: always
+    depends_on:
+    - traefik
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.ci.${DOCKER_IP}.xip.io/'
+    volumes:
+    - gitlab_conf:/etc/gitlab
+    - gitlab_log:/var/log/gitlab
+    - gitlab_data:/var/opt/gitlab
+    labels:
+    - traefik.port=80
+  
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine-v10.5.0
+    restart: always
+    depends_on:
+    - traefik
+    environment:
+      REGISTER_NON_INTERACTIVE: ''
+      CI_SERVER_URL: http://gitlab.ci.${DOCKER_IP}.xip.io/
+      RUNNER_NAME: docker-runner
+      RUNNER_EXECUTOR: docker
+      DOCKER_IMAGE: ruby:2.1
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  
+  sonarqube:
+    image: sonarqube
+    restart: always
+    depends_on:
+    - traefik
+    volumes:
+    - sonarqube_data:/opt/sonarqube/data
+    - sonarqube_extensions:/opt/sonarqube/extensions
+  
+  traefik:
+    image: traefik:1.5.3
+    command: --api --docker --docker.domain=${DOCKER_IP}.xip.io
+    restart: always
+    ports:
+    - 80:80
+    - 8080:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /dev/null:/traefik.toml
+
+volumes:
+  gitlab_conf: 
+  gitlab_log: 
+  gitlab_data: 
+  sonarqube_data: 
+  sonarqube_extensions: 
